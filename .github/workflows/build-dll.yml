@@ -1,0 +1,30 @@
+name: Build wshrm.dll
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Download source
+        uses: actions/checkout@v4
+
+      - name: Add MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build Release x64
+        run: msbuild Osiris.sln /p:Platform=x64 /p:Configuration=Release
+
+      - name: Rename DLL
+        shell: powershell
+        run: |
+          $dll = Get-ChildItem -Path . -Recurse -Filter Osiris.dll | Select-Object -First 1
+          Copy-Item $dll.FullName "$($dll.DirectoryName)\wshrm.dll"
+
+      - name: Upload DLL
+        uses: actions/upload-artifact@v4
+        with:
+          name: wshrm
+          path: "**/wshrm.dll"
